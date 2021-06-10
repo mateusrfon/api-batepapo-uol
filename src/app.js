@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
+//import fs from 'fs';
 import dayjs from 'dayjs';
 
 const app = express();
@@ -28,6 +28,10 @@ app.post("/participants", (req, res) => {
         res.sendStatus(200);
     };
 });
+
+app.get("/participants", (req, res) => {
+    res.send(participants);
+})
 
 app.listen(4000, () => {
     console.log("On business baby");
