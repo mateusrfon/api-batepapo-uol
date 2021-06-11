@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-//import fs from 'fs';
+import fs from 'fs';
 import dayjs from 'dayjs';
 import { stripHtml } from "string-strip-html";
 
@@ -10,6 +10,14 @@ app.use(cors());
 
 let participants = [];
 let messages = [];
+
+if (fs.existsSync("./participants.txt")) {
+    participants = JSON.parse(fs.readFileSync("./participants.txt"));
+}
+
+if (fs.existsSync("./messages.txt")) {
+    messages = JSON.parse(fs.readFileSync("./messages.txt"));
+}
 
 app.post("/participants", (req, res) => {
     const { name } = req.body;
@@ -26,6 +34,8 @@ app.post("/participants", (req, res) => {
                         type: 'status',
                         time: dayjs().format('HH:mm:ss')
                     });
+        fs.writeFileSync("./participants.txt", JSON.stringify(participants));
+        fs.writeFileSync("./messages.txt", JSON.stringify(messages));
         res.sendStatus(200);
     };
 });
@@ -52,6 +62,7 @@ app.post("/messages", (req, res) => {
         res.sendStatus(400);
     } else {
         messages.push(message);
+        fs.writeFileSync("./messages.txt", JSON.stringify(messages));
         res.sendStatus(200);
     }
 });
@@ -85,6 +96,7 @@ app.post("/status", (req, res) => {
         res.sendStatus(400);
     } else {
         participants[index].lastStatus = Date.now();
+        fs.writeFileSync("./participants.txt", JSON.stringify(participants));
         res.sendStatus(200);
     }
 });
@@ -102,6 +114,7 @@ setInterval(() => {
         }
     })
     participants = participants.filter(e => (Date.now() - e.lastStatus) < 10000);
+    fs.writeFileSync("./participants.txt", JSON.stringify(participants));
 }, 15000);
 
 app.listen(4000, () => {
