@@ -36,7 +36,7 @@ app.get("/participants", (req, res) => {
 app.post("/messages", (req, res) => {
     const { to, text, type } = req.body;
     const time = dayjs().format('HH:mm:ss');
-    const from = req.headers.get('User');
+    const from = req.header('User');
     const message = {
         from,
         to,
@@ -45,13 +45,38 @@ app.post("/messages", (req, res) => {
         time
     };
     
-    if ((to === '' || text === '') || (type !== 'message' && type !== 'private_message') || !participants.reduce((acc,e) => e.from === from ? acc = true : null, false)) {
+    if ((to === '' || text === '') 
+    || (type !== 'message' && type !== 'private_message') 
+    || participants.filter(e => e.name === from).length === 0) {
         res.sendStatus(400);
+        console.log(message)
     } else {
         messages.push(message);
         res.sendStatus(200);
     }
 });
+
+app.get("/messages", (req, res) => {
+    const limit = req.query.limit;
+    const user = req.header('User');
+    const userMessages = messages.filter(e => {if (e.from === user 
+                                                || e.to === user 
+                                                || e.to === "Todos" 
+                                                || e.type === "message") {
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                        }); 
+    if (limit !== undefined) {
+        userMessages.reverse();
+        userMessages.splice(limit);
+        userMessages.reverse();
+        res.send(userMessages);
+    } else {
+        res.send(userMessages);
+    }
+})
 
 app.listen(4000, () => {
     console.log("On business baby");
