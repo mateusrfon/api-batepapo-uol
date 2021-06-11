@@ -90,6 +90,17 @@ app.post("/status", (req, res) => {
 });
 
 setInterval(() => {
+    participants.forEach(e => {
+        if ((Date.now() - e.lastStatus) > 10000) {
+            messages.push({ 
+                from: e.name, 
+                to: "Todos", 
+                text: "sai da sala...", 
+                type: "status", 
+                time: dayjs().format("HH:mm:ss")
+            });
+        }
+    })
     participants = participants.filter(e => (Date.now() - e.lastStatus) < 10000);
 }, 15000);
 
