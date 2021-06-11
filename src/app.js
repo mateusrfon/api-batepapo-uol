@@ -7,8 +7,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const participants = [];
-const messages = [];
+let participants = [];
+let messages = [];
 
 app.post("/participants", (req, res) => {
     const { name } = req.body;
@@ -77,6 +77,21 @@ app.get("/messages", (req, res) => {
         res.send(userMessages);
     }
 })
+
+app.post("/status", (req, res) => {
+    const user = req.header('User');
+    const index = participants.findIndex(e => e.name === user);
+    if (index === -1) {
+        res.sendStatus(400);
+    } else {
+        participants[index].lastStatus = Date.now();
+        res.sendStatus(200);
+    }
+});
+
+setInterval(() => {
+    participants = participants.filter(e => (Date.now() - e.lastStatus) < 10000);
+}, 15000);
 
 app.listen(4000, () => {
     console.log("On business baby");
