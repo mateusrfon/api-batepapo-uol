@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 //import fs from 'fs';
 import dayjs from 'dayjs';
+import { stripHtml } from "string-strip-html";
 
 const app = express();
 app.use(express.json());
@@ -17,9 +18,9 @@ app.post("/participants", (req, res) => {
     } else if (participants.filter(e => e.name === name).length > 0) {
         res.sendStatus(401);
     } else {
-        participants.push({ name, lastStatus: Date.now() });
+        participants.push({ name: stripHtml(name).result.trim(), lastStatus: Date.now() });
         messages.push({ 
-                        from: name, 
+                        from: stripHtml(name).result.trim(), 
                         to: 'Todos', 
                         text: 'entra na sala...', 
                         type: 'status',
@@ -38,10 +39,10 @@ app.post("/messages", (req, res) => {
     const time = dayjs().format('HH:mm:ss');
     const from = req.header('User');
     const message = {
-        from,
-        to,
-        text,
-        type,
+        from: stripHtml(from).result.trim(),
+        to: stripHtml(to).result.trim(),
+        text: stripHtml(text).result.trim(),
+        type: stripHtml(type).result.trim(),
         time
     };
     
@@ -49,7 +50,6 @@ app.post("/messages", (req, res) => {
     || (type !== 'message' && type !== 'private_message') 
     || participants.filter(e => e.name === from).length === 0) {
         res.sendStatus(400);
-        console.log(message)
     } else {
         messages.push(message);
         res.sendStatus(200);
